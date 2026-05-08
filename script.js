@@ -12,7 +12,8 @@ const AppState = (() => {
     match: { selected: null, pairs: [], count: 0 },
     scramble: { pool: [], idx: 0, score: 0 },
     flashcard: { pool: [], idx: 0, flipped: false },
-    chat: { history: [] }
+    chat: { history: [] },
+    user: { name: localStorage.getItem('user_name') || '' }
   };
 
   return {
@@ -84,6 +85,45 @@ function renderProgressDashboard() {
       </div>
     `;
   }).join('');
+}
+
+// Sound System (Simple Beeps for Demo)
+const Sound = (() => {
+  const play = (freq, type, duration) => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  };
+  return {
+    success: () => { play(523.25, 'sine', 0.5); setTimeout(() => play(659.25, 'sine', 0.5), 100); },
+    error: () => { play(150, 'sawtooth', 0.3); },
+    click: () => { play(800, 'sine', 0.05); }
+  };
+})();
+
+function saveUserName() {
+  const input = document.getElementById('user-name-input');
+  const name = input?.value.trim();
+  if (name) {
+    localStorage.setItem('user_name', name);
+    AppState.set('user.name', name);
+    document.getElementById('welcome-modal').style.display = 'none';
+    Notification.show(`Chào mừng ${name}! Chúc bạn học vui vẻ!`, 'success');
+    Sound.success();
+  }
+}
+
+function initWelcome() {
+  if (!AppState.get('user.name')) {
+    document.getElementById('welcome-modal').style.display = 'flex';
+  }
 }
 
 // Notification System
@@ -161,6 +201,15 @@ function initTabs() {
       const tab = document.getElementById(tabId);
       if (tab) tab.classList.add('active');
     });
+  });
+}
+
+function initClassroomMode() {
+  const toggle = document.getElementById('classroom-mode-toggle');
+  toggle?.addEventListener('click', () => {
+    const active = document.body.classList.toggle('classroom-mode');
+    Notification.show(active ? '👨‍🏫 Chế độ lớp học: Đã bật' : '🏠 Chế độ cá nhân', 'info');
+    Sound.click();
   });
 }
 
@@ -427,8 +476,10 @@ function answerQuiz(btn) {
     const currentScore = AppState.get('quiz.score');
     AppState.set('quiz.score', currentScore + 1);
     document.getElementById('quiz-score').textContent = currentScore + 1;
+    Sound.success();
   } else {
     btn.classList.add('wrong');
+    Sound.error();
     document.querySelectorAll('.quiz-opt').forEach(b => {
       if (b.dataset.answer === correct) b.classList.add('correct');
     });
@@ -506,6 +557,7 @@ function selectMatch(el) {
     const currentCount = AppState.get('match.count');
     const newCount = currentCount + 1;
     AppState.set('match.count', newCount);
+    Sound.success();
     document.getElementById('match-score').textContent = newCount;
 
     if (newCount === 6) {
@@ -517,6 +569,7 @@ function selectMatch(el) {
     }
   } else {
     [selected, el].forEach(x => x.classList.add('wrong-match'));
+    Sound.error();
     setTimeout(() => {
       [selected, el].forEach(x => x.classList.remove('selected', 'wrong-match'));
     }, 700);
@@ -598,8 +651,10 @@ function checkScramble(ans) {
     const currentScore = AppState.get('scramble.score');
     AppState.set('scramble.score', currentScore + 1);
     document.getElementById('scr-score').textContent = currentScore + 1;
+    Sound.success();
   } else {
     fbEl.innerHTML = `<span style="color:var(--red)">❌ Sai! Đáp án đúng là: <strong>${ans}</strong></span>`;
+    Sound.error();
   }
 
   const currentIdx = AppState.get('scramble.idx');
@@ -695,17 +750,20 @@ function fcPrev() {
 //  AI CHATBOT MODULE
 // ============================================================
 function getSystemPrompt() {
+  const userName = AppState.get('user.name') || 'học sinh';
   // Tạo danh sách từ vựng chi tiết để AI tham chiếu chính xác
   const vocabContext = typeof UNITS !== 'undefined' 
     ? UNITS.map(u => `Unit ${u.id} (${u.name}): Từ vựng [${u.vocab.map(v => v.word + ' - ' + v.meaning).join(', ')}]`).join('\n')
     : 'Chương trình Tiếng Anh 5';
 
-  return `Bạn là "Gia sư Tiếng Anh" thông minh cho ứng dụng Smart English Handbook 5 (Sách Global Success).
+  return `Bạn là "Gia sư Tiếng Anh" thông minh cho ứng dụng Smart English Handbook 5.
+Đang nói chuyện với bạn nhỏ tên là: ${userName}.
 
 NGỮ CẢNH BÀI HỌC TRONG HỆ THỐNG:
 ${vocabContext}
 
 Quy tắc trả lời:
+- Luôn gọi tên học sinh (${userName}) trong câu trả lời để thân thiện.
 - Bạn chỉ trả lời các câu hỏi liên quan đến Tiếng Anh và các Unit đã liệt kê ở trên.
 - Nếu học sinh hỏi về từ vựng có trong danh sách, hãy dùng đúng nghĩa tiếng Việt được cung cấp.
 - Cấu trúc phản hồi: 
@@ -860,6 +918,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initTabs();
     initDarkMode();
+    initClassroomMode();
+    initWelcome();
     VocabModule.init();
     StructuresModule.init();
     initGamesData();
