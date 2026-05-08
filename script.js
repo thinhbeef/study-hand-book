@@ -718,7 +718,20 @@ Quy tắc trả lời:
 }
 
 async function callClaude(userMsg) {
-  // API_KEY được bảo mật thông qua Vercel Environment Variables (Backend)
+  // LƯU Ý: Để chạy thực tế trên trình duyệt, bạn thường gặp lỗi CORS. 
+  // Key này nên được quản lý ở Backend. Đây là cấu hình chuẩn cho API.
+  const API_KEY = 'YOUR_ACTUAL_CLAUDE_API_KEY'; 
+
+  // Mock response nếu đang dùng key Demo (Tránh lỗi CORS)
+  if (API_KEY.includes('DEMO')) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(`🌟 Chào bạn! Mình là AI Trợ Lý. Vì đây là phiên bản Demo, mình đang giả lập phản hồi. 
+Bạn có thể đặt câu hỏi về các Unit từ 1 đến 10 nhé! Ví dụ: "Nghĩa của từ Address là gì?" 📖✍️`);
+      }, 1500);
+    });
+  }
+
   try {
     const messages = getChatHistory();
     messages.push({ role: 'user', content: userMsg });
@@ -798,20 +811,6 @@ function showTyping() {
 
 function hideTyping() {
   document.getElementById('typing-indicator')?.remove();
-}
-
-function clearChat() {
-  if (confirm('Bạn có muốn xóa toàn bộ lịch sử trò chuyện không?')) {
-    AppState.set('chat.history', []);
-    const msgs = document.getElementById('chat-messages');
-    if (msgs) {
-      msgs.innerHTML = `
-        <div class="msg bot">
-          <div class="msg-bubble">👋 Đã xóa lịch sử. Mình có thể giúp gì thêm cho bạn không? 😊</div>
-        </div>`;
-    }
-    Notification.show('🧹 Đã dọn dẹp hội thoại', 'info');
-  }
 }
 
 async function sendChat() {

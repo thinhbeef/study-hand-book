@@ -193,6 +193,16 @@ main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
 .stat-info b { display: block; color: var(--text); font-size: 1rem; }
 .stat-info { font-size: 0.85rem; color: var(--text-soft); font-weight: 700; }
 
+/* ===== NOTIFICATIONS ===== */
+.notification-toast {
+  position: fixed; top: 20px; right: 20px; padding: 12px 24px;
+  border-radius: 12px; z-index: 9999; font-weight: 700; color: white;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2); animation: slideIn 0.3s ease;
+}
+.notification-toast.error { background: #F44336; }
+.notification-toast.success { background: #4CAF50; }
+.notification-toast.info { background: var(--blue); }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
   * { box-sizing: border-box; }
