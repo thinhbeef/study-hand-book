@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart English Handbook 5</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">📖</span>
+      <div class="logo-text">
+        Smart English Handbook
+        <span>Tiếng Anh 5 – Global Success</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button id="dark-mode-toggle" class="control-btn" title="Đổi giao diện">🌓</button>
+      <div class="header-badge">✨ AI Powered</div>
+    </div>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" data-tab="vocab">📚 Vocabulary</button>
+  <button class="nav-tab" data-tab="structures">📝 Structures</button>
+  <button class="nav-tab" data-tab="games">🎮 Games</button>
+  <button class="nav-tab" data-tab="chatbot">🤖 AI Chatbot</button>
+</div>
+
+<main>
+
+<!-- ======== VOCABULARY TAB ======== -->
+<div class="tab-content active" id="tab-vocab">
+  <div class="section-title" style="color:var(--blue)">📚 Vocabulary</div>
+  <p class="section-sub">Chọn Unit để xem từ vựng – nhấn 🔊 để nghe phát âm</p>
+  <div class="unit-selector" id="vocab-units"></div>
+  <div class="vocab-grid" id="vocab-grid"></div>
+</div>
+
+<!-- ======== STRUCTURES TAB ======== -->
+<div class="tab-content" id="tab-structures">
+  <div class="section-title" style="color:var(--purple)">📝 Structures</div>
+  <p class="section-sub">Cấu trúc câu quan trọng theo từng Unit – có ví dụ minh họa</p>
+  <div class="unit-selector" id="struct-units"></div>
+  <div id="struct-content"></div>
+</div>
+
+<!-- ======== GAMES TAB ======== -->
+<div class="tab-content" id="tab-games">
+  <div class="section-title" style="color:var(--green)">🎮 Games</div>
+  <p class="section-sub">Chọn game để luyện tập từ vựng vui nhộn!</p>
+
+  <!-- Progress Dashboard -->
+  <div id="progress-dashboard" class="progress-dashboard"></div>
+
+  <div class="games-grid" id="games-menu">
+    <div class="game-card" onclick="startGame('quiz')">
+      <div class="game-icon">❓</div>
+      <h3>Quiz Challenge</h3>
+      <p>Chọn đáp án đúng cho từ tiếng Anh</p>
+    </div>
+    <div class="game-card" onclick="startGame('matching')">
+      <div class="game-icon">🔗</div>
+      <h3>Word Matching</h3>
+      <p>Nối từ tiếng Anh với nghĩa tiếng Việt</p>
+    </div>
+    <div class="game-card" onclick="startGame('scramble')">
+      <div class="game-icon">🔀</div>
+      <h3>Word Scramble</h3>
+      <p>Sắp xếp lại các chữ cái để tạo từ đúng</p>
+    </div>
+    <div class="game-card" onclick="startGame('flashcard')" style="border-top-color:var(--orange)">
+      <div class="game-icon">🃏</div>
+      <h3>Flashcard</h3>
+      <p>Lật thẻ để xem nghĩa – ghi nhớ siêu nhanh!</p>
+    </div>
+  </div>
+
+  <!-- Quiz Game Area -->
+  <div class="game-area" id="game-quiz">
+<div class="btn-row" style="margin-bottom:16px;"><button class="btn btn-back" onclick="backToGames()">← Quay lại</button><div class="score-badge">⭐ Điểm: <span id="quiz-score">0</span>/<span id="quiz-total">0</span></div></div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="quiz-progress" style="width:0%"></div></div>
+    <div id="quiz-body"></div>
+  </div>
+
+  <!-- Matching Game Area -->
+  <div class="game-area" id="game-matching">
+    <div class="btn-row" style="margin-bottom:16px;"><button class="btn btn-back" onclick="backToGames()">← Quay lại</button><div class="score-badge">✅ Đã khớp: <span id="match-score">0</span>/6</div></div>
+    <div class="match-grid">
+      <div class="match-col" id="match-left"></div>
+      <div class="match-col" id="match-right"></div>
+    </div>
+    <div class="btn-row" style="margin-top:20px;"><button class="btn btn-green" onclick="initMatching()">🔄 Chơi lại</button></div>
+  </div>
+
+  <!-- Scramble Game Area -->
+  <div class="game-area" id="game-scramble">
+    <div class="btn-row" style="margin-bottom:16px;"><button class="btn btn-back" onclick="backToGames()">← Quay lại</button><div class="score-badge">⭐ <span id="scr-score">0</span> điểm</div></div>
+    <div id="scr-body"></div>
+  </div>
+
+  <!-- Flashcard Game Area -->
+  <div class="game-area" id="game-flashcard">
+    <div class="btn-row" style="margin-bottom:16px;"><button class="btn btn-back" onclick="backToGames()">← Quay lại</button><div style="font-weight:700;color:var(--text-soft)">Thẻ <span id="fc-idx">1</span>/<span id="fc-total">1</span></div></div>
+    <div id="fc-body" style="perspective:800px;"></div>
+    <div class="btn-row" style="justify-content:center; margin-top:20px;">
+      <button class="btn btn-back" onclick="fcPrev()">◀ Trước</button>
+      <button class="btn btn-blue" onclick="flipCard()">🔄 Lật thẻ</button>
+      <button class="btn btn-back" onclick="fcNext()">Sau ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== CHATBOT TAB ======== -->
+<div class="tab-content" id="tab-chatbot">
+  <div class="section-title" style="color:var(--orange)">🤖 AI Chatbot</div>
+  <p class="section-sub">Hỏi bất cứ điều gì về Tiếng Anh lớp 5 – AI sẽ giải thích bằng tiếng Việt!</p>
+  <div class="chatbot-wrap">
+    <div class="chat-header">
+      <div class="chat-avatar">🦉</div>
+      <div class="chat-header-info">
+        <h3>Trợ lý Anh ngữ Lớp 5</h3>
+        <p>Hỏi về từ vựng, ngữ pháp, phát âm...</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg bot">
+<div class="msg-bubble">👋 Xin chào! Mình là trợ lý AI học Tiếng Anh lớp 5 Global Success.<br><br>Bạn có thể hỏi mình về:<br>• 📖 Từ vựng & nghĩa tiếng Việt<br>• 📝 Cấu trúc câu & cách dùng<br>• 🔊 Cách phát âm từ<br>• ✍️ Đặt câu ví dụ<br><br>Hỏi đi nào! 😊</div>
+        <div class="msg-time">AI Trợ lý</div>
+      </div>
+    </div>
+    <div class="chat-suggestions">
+      <button class="sug-btn" onclick="sendSuggestion(this)">"dolphin" nghĩa là gì?</button>
+      <button class="sug-btn" onclick="sendSuggestion(this)">Cấu trúc "What's your favourite...?"</button>
+      <button class="sug-btn" onclick="sendSuggestion(this)">Cách dùng "should"?</button>
+      <button class="sug-btn" onclick="sendSuggestion(this)">Đặt câu với "I'd like to be"</button>
+    </div>
+    <div class="chat-input-area">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Nhập câu hỏi tiếng Việt hoặc tiếng Anh..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">Gửi ✈️</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<!-- Load dữ liệu trước logic -->
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
